@@ -2,21 +2,16 @@ package com.fastcampus.projectboard.repository;
 
 import com.fastcampus.projectboard.config.JpaConfig;
 import com.fastcampus.projectboard.domain.Article;
-import org.assertj.core.api.Assertions;
+import com.fastcampus.projectboard.domain.UserAccount;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("JPA 연결 테스트")
 @Import(JpaConfig.class)
@@ -24,13 +19,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class JpaRepositoryTest {
     private final ArticleRepository articleRepository;
     private final ArticleCommentRepository articleCommentRepository;
+    private final UserAccountRepository userAccountRepository;
 
 
     public JpaRepositoryTest(
             @Autowired ArticleRepository articleRepository,
-            @Autowired ArticleCommentRepository articleCommentRepository) {
+            @Autowired ArticleCommentRepository articleCommentRepository,
+            @Autowired UserAccountRepository userAccountRepository
+    ) {
         this.articleRepository = articleRepository;
         this.articleCommentRepository = articleCommentRepository;
+        this.userAccountRepository = userAccountRepository;
     }
 
 
@@ -55,9 +54,11 @@ class JpaRepositoryTest {
     void givenTestData_whenInserting_thenWorksFine(){
         //given
         long previousCount = articleRepository.count();
+        UserAccount userAccount = userAccountRepository.save(UserAccount.of("uno", "pw", null, null, null));
+        Article article = Article.of(userAccount, "new article", "new content", "#spring");
 
-        //when
-        Article savedArticle = articleRepository.save(Article.of("new article", "new content", "#hashtag"));
+        // When
+        articleRepository.save(article);
 
         //then
         assertThat(articleRepository.count())
